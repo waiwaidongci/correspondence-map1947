@@ -4,7 +4,7 @@ export async function request<T=any>(path:string,options:RequestInit={}):Promise
  if(!response.ok){const body=await response.json().catch(()=>({detail:'网络请求失败'}));if(response.status===401&&path!='/auth/login'){localStorage.removeItem('hemo-token');window.dispatchEvent(new Event('session-expired'));}throw new Error(typeof body.detail==='string'?body.detail:JSON.stringify(body.detail));}
  return response.json();
 }
-export const post=(path:string,data:unknown)=>request(path,{method:'POST',body:JSON.stringify(data)});
+export const post=<T=any>(path:string,data:unknown):Promise<T>=>request<T>(path,{method:'POST',body:JSON.stringify(data)});
 export async function download(path:string,name:string){
  const response=await fetch('/api'+path,{headers:{Authorization:'Bearer '+localStorage.getItem('hemo-token')}});
  if(!response.ok)throw new Error('导出失败，请重试');

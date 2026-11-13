@@ -28,13 +28,14 @@ docker compose exec -T backend python -m scripts.seed_demo
 3. 选择“秋季导览类别研究”、显示前2轴，提交真实Celery队列。
 4. worker计算标准化残差SVD，得到总惯量.408904、χ²368.014，图保留82.62%。
 5. 读取轴1/轴2贡献和cos²；策展同业显示质量约.127、地图路径约.068，不能只凭二维位置作解释。
-6. 核对期望最小24.75、df12及渐近p；再运行稀疏试采，看到零边际剔除和“不可靠”警示。
-7. 从有效行/列类别建立解释，写明同行/同列轮廓与跨集距离边界，安排独立导览小样验证。
-8. 许禾以admin审阅解释；林叙以viewer下载获批CSV，带上点集、主坐标、显示质量、惯量保留与诊断边界。
+6. 在坐标与诊断页录入新参观类别（补充行）或新导览方式（补充列），按对侧code投影到本运行：核对补充点坐标与显示cos²，图中虚线空心标示、不参与轴贡献；未知码、撞活动/零边际码、零总边际逐条说明拒绝原因；若中途改了源数据，指纹失效会被409拒绝，需重跑分析再投影。
+7. 核对期望最小24.75、df12及渐近p；再运行稀疏试采，看到零边际剔除和“不可靠”警示。
+8. 从有效行/列类别建立解释，写明同行/同列轮廓与跨集距离边界，安排独立导览小样验证。
+9. 许禾以admin审阅解释；林叙以viewer下载获批CSV，带上点集、主坐标、显示质量、惯量保留与诊断边界。
 
 ## 实体、输入与页面
 
-五个核心实体ContingencyStudy、Category、CellCount、CorrespondenceRun、InterpretationNote贯穿表/model/schema/service/route/API/store/UI。六页为研究折页、列联计数、分析配置、坐标与诊断、解释审阅、研究留痕。CorrespondenceMap、InertiaSummary、RunTable跨页复用，另有Diagnostics及共享Table/Badge/Notice/Empty。
+五个核心实体ContingencyStudy、Category、CellCount、CorrespondenceRun、InterpretationNote贯穿表/model/schema/service/route/API/store/UI。六页为研究折页、列联计数、分析配置、坐标与诊断、解释审阅、研究留痕。CorrespondenceMap、InertiaSummary、RunTable跨页复用，另有Diagnostics、SupplementaryProjection及共享Table/Badge/Notice/Empty。坐标与诊断页可在选定运行下录入补充行列并即时核对投影坐标、表示质量与拒绝原因，补充点在图中以虚线空心标记单独标示。
 
 导入2–12行×2–12列非负整数矩阵，每格≤1000000；行与列分别按code唯一，数据库cell(row_id,column_id)唯一且count≥0。未知维度、重复类别、负数、非整数、非有限、总量为零拒绝；最大总N144000000。每格校订是替换并审计，不把重复提交当追加。缺失格在内部表构造时规范为0，导入矩阵必须完整。分类标签是合成机构级汇总，不含个人身份数据。UI接受矩阵JSON与类别标签，不直接解析CSV。
 
@@ -49,6 +50,15 @@ docker compose exec -T backend python -m scripts.seed_demo
 同行与同列分别具有完整χ²轮廓几何；截断图仅保留相应惯量。这里两集都使用主坐标，**行列两点之间的欧氏近距离不可直接作为可比较的偏好距离**。图不用于行列跨集距离推断；1轴配置时所有点只沿第一轴显示，纵向不放第二轴信息。低cos²点应回到完整坐标/计数阅读。
 
 `services/diagnostics.py`：E_ij=N r_i c_j，Pearson χ²=Σ(X−E)²/E，df=(R−1)(C−1)，渐近p由chi²生存函数。标准残差=(X−E)/√E；校正标准残差=(X−E)/√[E(1−r_i)(1−c_j)]。任一期望<1或超过20%期望<5时标渐近p不可靠，不作强显著结论；即使规则未触发，也依赖独立观察计数与适当抽样。逐格残差未作多重检验校正，只用作描述诊断；不自动解释为逐格显著。
+
+### 补充（illustrative）类别投影
+
+新增参观类别不再混入原表重算。`POST /projections` 把补充行/列的轮廓投影到一份**已成功且有方向**的选定运行，参考点、奇异值、惯量、χ²诊断与参考边际全部保持不变。由 S V=UΣ，活动主坐标 F=D_r⁻¹ᐟ²UΣ=(P−rcᵀ)D_c⁻¹ᐟ²V，故补充行取 z=D_c⁻¹ᐟ²(p̃−c) 后投影 zᵀV，补充列对称地用 D_r⁻¹ᐟ²(q̃−r) 乘 U；**不再除以奇异值**（否则近零秩轴无定义且整体错标）。完整SVD的零空间向量（σ≈0）不构成轴，因子按数值秩切片后才参与投影。
+
+补充点单独返回显示轴主坐标、全秩坐标、χ²轮廓距离²与逐轴cos²；显示质量为所选轴cos²之和，质心点距离在数值零范围时cos²报null。补充点**不计算也不参与轴贡献**（contributions恒为空），其录入以总数回显供核对，不伪造参考mass。新轮廓的部分惯量可能落在参考秩空间之外，故补充点cos²之和≤1而非等于1。两集仍是主坐标几何，跨集欧氏距离不可直接比较。
+
+按code匹配：补充行的计数键为参考分析的活动列code，补充列反之。逐条给出拒绝原因——对侧code未知、与活动类别撞码（撞码即混入重算，故拒绝）、与参考分析中因零边际被剔除的类别同码、或补充计数总和为零（零边际无可定义轮廓）。对侧缺失的code按0计入并在`missing_codes`与页面明示。每次投影前重算当前研究指纹，与运行保存的指纹不一致即返回409并写`projection.stale_rejected`审计，拒绝沿用过期轴；数据复原后可重新投影。成功投影写`projection.created`审计，记录投影/拒绝条数。观察员只读（403），投影不落库、不改写历史运行，刷新后需重新录入核对。
+
 
 输入指纹覆盖研究id/name/filename/description、全部行列类别元数据、全部单元格的row/column/count、显示轴数、算法版本与容差，稳定排序；行序改变不改指纹，计数/标签/说明/显示轴改变会改。worker把完整SVD、惯量、主坐标、贡献、cos²、期望/残差、零边际与诊断存JSON和PG。有效行列不足、坏矩阵等记录failed，不伪造成功结果。
 
@@ -83,7 +93,7 @@ npm run dev
 
 结构为backend/src/{routes,controllers,services,models,schemas,middlewares,utils,constants,config}、backend/scripts/seed_demo.py、backend/migrations/和frontend/src/{api,stores,types,components/common,hooks,pages,router,utils,constants}。metadata首次建表，migrations记录结构，生产增量迁移需另行规划。请求ID和全局错误两个中间件；审计登录/导入/校订/运行/审阅；CSV公式前缀转义。
 
-共享枚举：backend/src/constants/enums.py中的Role/RunStatus/NoteStatus/Axis，frontend/src/constants/enums.ts对应角色/运行/解释/点集标签；用于鉴权、服务/schema、Badge/Layout/各页面。70个职责源文件，不计__init__及配置。源码不放截图、日志和测试报告；独立测试与真实截图在批次根test-artifacts/gb-0018，TESTING.md列实测与已知差异。
+共享枚举：backend/src/constants/enums.py中的Role/RunStatus/NoteStatus/Axis，frontend/src/constants/enums.ts对应角色/运行/解释/点集标签；用于鉴权、服务/schema、Badge/Layout/各页面。补充投影在原有职责源文件之外新增4件：backend的services/projection.py、routes/projections.py、schemas/projection.py与frontend的components/SupplementaryProjection.tsx，均不计__init__及配置。该能力不改动`services/ca.py`与历史运行结果。源码不放截图、日志和测试报告；独立测试与真实截图在批次根test-artifacts/gb-0018，TESTING.md列实测与已知差异。
 
 ## 范围与License
 

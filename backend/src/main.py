@@ -8,7 +8,7 @@ from src.config.settings import SEED_DEMO,REDIS_URL
 from src.models import *
 from src.middlewares.request_id import RequestIDMiddleware
 from src.middlewares.errors import ErrorMiddleware
-from src.routes import auth,catalog,runs,notes,audit
+from src.routes import auth,catalog,runs,notes,audit,projections
 @asynccontextmanager
 async def lifespan(app):
  Base.metadata.create_all(engine)
@@ -20,7 +20,7 @@ async def lifespan(app):
  yield
 app=FastAPI(title='禾陌展陈偏好对应图',lifespan=lifespan)
 app.add_middleware(ErrorMiddleware);app.add_middleware(RequestIDMiddleware)
-for route in (auth,catalog,runs,notes,audit):app.include_router(route.router)
+for route in (auth,catalog,runs,notes,audit,projections):app.include_router(route.router)
 @app.get('/health')
 def health():
  with engine.connect() as c:c.execute(text('select 1'))
