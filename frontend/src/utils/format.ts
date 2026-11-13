@@ -1,0 +1,1 @@
+export const dec=(n:number|null|undefined,d=3)=>n==null?'—':n.toFixed(d);export const pct=(n:number|null|undefined)=>n==null?'—':(n*100).toFixed(1)+'%';export const scientific=(n:number|undefined)=>n==null?'—':n<.001?n.toExponential(2):n.toFixed(4);export const date=(s:string)=>new Date(s).toLocaleString('zh-CN',{hour12:false});

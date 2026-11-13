@@ -1,0 +1,9 @@
+export type User={id:number;email:string;name:string;role:string};
+export type Study={id:number;name:string;filename:string;description:string;rows:number;columns:number;total:number};
+export type Category={id:number;study_id:number;axis:string;code:string;label:string;position:number};
+export type Cell={id:number;study_id:number;row_id:number;column_id:number;count:number};
+export type Point={id:number;code:string;label:string;axis:string;mass:number;coordinates:number[];contributions:number[];cos2:(number|null)[];display_quality:number|null;chi_square_distance_squared:number;centroid:boolean};
+export type CAResult={fingerprint:string;n:number;rank:number;total_inertia:number;direction_available:boolean;displayed_axes:number;retained_inertia:number|null;axes:{axis:number;singular_value:number;inertia:number;share:number}[];row_points:Point[];column_points:Point[];dropped_rows:Category[];dropped_columns:Category[];row_categories:Category[];column_categories:Category[];table:number[][];degenerate_axes:number[][];zero_message:string|null;diagnostics:{chi_square:number;df:number;p_value:number;expected:number[][];pearson_residuals:number[][];adjusted_standardized_residuals:number[][];expected_min:number;fraction_expected_under5:number;any_expected_under1:boolean;asymptotic_reliable:boolean;p_label:string}};
+export type Run={id:number;study_id:number;name:string;axes:number;status:string;result:Partial<CAResult>;error?:string;created_at:string};
+export type Note={id:number;run_id:number;name:string;category_ids:number[];interpretation:string;next_step:string;status:string;review_note:string;created_at:string};
+export type Audit={id:number;actor:string;action:string;detail:object;created_at:string};

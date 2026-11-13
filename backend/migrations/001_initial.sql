@@ -1,0 +1,4 @@
+-- metadata initializes contingency_studies, categories, cell_counts,
+-- correspondence_runs, interpretation_notes and user/audit tables.
+-- Natural keys: study name; category(study,axis,code); cell(row,column).
+-- Counts have nonnegative check. Plan production migrations explicitly.

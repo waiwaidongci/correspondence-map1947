@@ -1,0 +1,1 @@
+export const ROLES={admin:'展陈研究负责人',analyst:'偏好结构研究员',viewer:'导览观察员'};export const RUN_STATUS={queued:'等待分析',running:'计算中',succeeded:'已完成',failed:'失败'};export const NOTE_STATUS={draft:'待审阅',approved:'已确认',rejected:'已退回'};export const AXES={row:'行类别',column:'列类别'};
